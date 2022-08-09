@@ -1,4 +1,4 @@
-specVersion: 0.0.1
+specVersion: 0.0.4
 schema:
   file: ./schema.graphql
 dataSources:
@@ -8,15 +8,16 @@ dataSources:
     source:
       address: "0xa325A96e0468e541377F6f9bB289d765849B2A17"
       abi: Web3RSVP
+      startBlock: 27531457
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - ConfirmedAttendee
-        - DepositsPaidOut
-        - NewEventCreated
-        - NewRSVP
+        - Event
+        - Account
+        - RSVP
+        - Confirmation
       abis:
         - name: Web3RSVP
           file: ./abis/Web3RSVP.json
@@ -30,3 +31,5 @@ dataSources:
         - event: NewRSVP(bytes32,address)
           handler: handleNewRSVP
       file: ./src/web-3-rsvp.ts
+features:
+  - ipfsOnEthereumContracts
