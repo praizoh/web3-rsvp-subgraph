@@ -29,6 +29,7 @@ export function handleNewEventCreated(event: NewEventCreated): void {
         const name = value.get("name");
         const description = value.get("description");
         const link = value.get("link");
+        const imagePath = value.get("image");
 
         if (name) {
           newEvent.name = name.toString();
@@ -40,6 +41,18 @@ export function handleNewEventCreated(event: NewEventCreated): void {
 
         if (link) {
           newEvent.link = link.toString();
+        }
+
+        if (imagePath) {
+          const imageURL =
+            "https://ipfs.io/ipfs/" +
+            event.params.eventDataCID +
+            imagePath.toString();
+          newEvent.imageURL = imageURL;
+        } else {
+          const fallbackURL =
+            "https://ipfs.io/ipfs/bafybeibssbrlptcefbqfh4vpw2wlmqfj2kgxt3nil4yujxbmdznau3t5wi/event.png";
+          newEvent.imageURL = fallbackURL;
         }
       }
     }
@@ -60,14 +73,17 @@ function getOrCreateAccount(address: Address): Account {
 }
 
 export function handleNewRSVP(event: NewRSVP): void {
-  let newRSVP = RSVP.load(event.transaction.from.toHex());
+  let id = event.params.eventID.toHex() + event.params.attendeeAddress.toHex();
+  let newRSVP = RSVP.load(id);
   let account = getOrCreateAccount(event.params.attendeeAddress);
   let thisEvent = Event.load(event.params.eventID.toHex());
   if (newRSVP == null && thisEvent != null) {
-    newRSVP = new RSVP(event.transaction.from.toHex());
+    newRSVP = new RSVP(id);
     newRSVP.attendee = account.id;
     newRSVP.event = thisEvent.id;
     newRSVP.save();
+    thisEvent.totalRSVPs = integer.increment(thisEvent.totalRSVPs);
+    thisEvent.save();
     account.totalRSVPs = integer.increment(account.totalRSVPs);
     account.save();
   }
